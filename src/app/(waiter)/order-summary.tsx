@@ -12,7 +12,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ResponsiveContainer } from '@/components/ResponsiveContainer';
 import {
+  BottomTabInset,
   BrandColor,
   BrandColorLight,
   CardShadow,
@@ -87,6 +89,7 @@ export default function OrderSummaryScreen() {
   }
 
   return (
+    <ResponsiveContainer>
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <FlatList
         data={items}
@@ -162,6 +165,7 @@ export default function OrderSummaryScreen() {
         )}
       </Pressable>
     </SafeAreaView>
+    </ResponsiveContainer>
   );
 }
 
@@ -296,7 +300,9 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: BrandColor,
-    margin: Spacing.three,
+    marginHorizontal: Spacing.three,
+    marginTop: Spacing.three,
+    marginBottom: Spacing.three + BottomTabInset,
     paddingVertical: 16,
     borderRadius: 28,
     alignItems: 'center',

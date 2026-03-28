@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   },
   totalLabel: { fontSize: 20, fontWeight: '700' },
   totalAmount: { fontSize: 22, fontWeight: '700', color: BrandColor },
-  actions: { padding: Spacing.three, gap: Spacing.two },
+  actions: { padding: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.two },
   actionButton: {
     backgroundColor: BrandColor, padding: Spacing.three,
     borderRadius: 12, alignItems: 'center',

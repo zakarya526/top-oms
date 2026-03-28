@@ -24,6 +24,7 @@ import {
 } from '@/constants/theme';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useMenu } from '@/lib/hooks/useMenu';
+import { useResponsive } from '@/lib/hooks/useResponsive';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
@@ -35,6 +36,8 @@ export default function AdminMenuScreen() {
   const [name, setName] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  const { numColumns: getColumns } = useResponsive();
+  const columns = getColumns({ compact: 1, medium: 2, wide: 2 });
   const activeCategoryId = selectedCategory || categories[0]?.id;
   const categoryItems = items.filter((i) => i.category_id === activeCategoryId);
 
@@ -89,9 +92,12 @@ export default function AdminMenuScreen() {
   return (
     <View style={styles.container}>
       <FlatList
+        key={`admin-menu-${columns}`}
         data={categoryItems}
         keyExtractor={(item) => item.id}
+        numColumns={columns}
         contentContainerStyle={styles.list}
+        columnWrapperStyle={columns > 1 ? styles.columnWrapper : undefined}
         ListHeaderComponent={
           <View style={styles.header}>
             <View style={styles.headerRow}>
@@ -105,6 +111,7 @@ export default function AdminMenuScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
+              style={styles.categoryPillsScroll}
               contentContainerStyle={styles.categoryPills}
             >
               {categories.map((cat) => (
@@ -132,7 +139,7 @@ export default function AdminMenuScreen() {
         }
         renderItem={({ item }) => (
           <Pressable
-            style={styles.itemCard}
+            style={[styles.itemCard, columns > 1 && styles.itemCardMultiCol]}
             onPress={() => router.push(`/(admin)/menu/${item.category_id}`)}
           >
             <View style={styles.itemInfo}>
@@ -211,6 +218,10 @@ const styles = StyleSheet.create({
   list: {
     padding: Spacing.three,
     paddingBottom: 100,
+    gap: Spacing.two,
+  },
+  columnWrapper: {
+    gap: Spacing.two,
   },
   header: {
     marginBottom: Spacing.three,
@@ -238,6 +249,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 24,
     fontWeight: '600',
+  },
+  categoryPillsScroll: {
+    flexGrow: 0,
   },
   categoryPills: {
     gap: 8,
@@ -267,8 +281,10 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.card,
     borderRadius: 16,
     padding: Spacing.three,
-    marginBottom: Spacing.two,
     ...CardShadow,
+  },
+  itemCardMultiCol: {
+    flex: 1,
   },
   itemInfo: {
     flex: 1,

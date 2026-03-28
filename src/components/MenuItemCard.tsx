@@ -49,14 +49,13 @@ export function MenuItemCard({ item, quantity, onAdd, onRemove }: MenuItemCardPr
 
 const styles = StyleSheet.create({
   card: {
+    flex: 1,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: Colors.light.card,
     borderRadius: 16,
     padding: Spacing.three,
-    marginHorizontal: Spacing.three,
-    marginBottom: Spacing.two,
     ...CardShadow,
   },
   info: {

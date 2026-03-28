@@ -11,6 +11,7 @@ import {
   StatusColors,
   StatusBackgrounds,
 } from '@/constants/theme';
+import { useResponsive } from '@/lib/hooks/useResponsive';
 import { supabase } from '@/lib/supabase';
 
 interface Stats {
@@ -58,6 +59,8 @@ export default function AdminDashboardScreen() {
     setLoading(false);
   }
 
+  const { isTablet } = useResponsive();
+
   if (loading || !stats) return <LoadingScreen />;
 
   const occupancyPercent = stats.totalTables > 0
@@ -72,7 +75,7 @@ export default function AdminDashboardScreen() {
       </Text>
 
       {/* Stats Grid */}
-      <View style={styles.grid}>
+      <View style={[styles.grid, isTablet && styles.gridTablet]}>
         <View style={styles.statCard}>
           <Text style={styles.statValue}>{stats.totalOrders}</Text>
           <Text style={styles.statLabel}>ACTIVE{'\n'}ORDERS</Text>
@@ -81,9 +84,6 @@ export default function AdminDashboardScreen() {
           <Text style={styles.statValue}>{stats.occupiedTables}</Text>
           <Text style={styles.statLabel}>ACTIVE{'\n'}TABLES</Text>
         </View>
-      </View>
-
-      <View style={styles.grid}>
         <View style={styles.statCard}>
           <Text style={styles.statValue}>{stats.pendingOrders + stats.preparingOrders}</Text>
           <Text style={styles.statLabel}>STAFF ON{'\n'}DUTY</Text>
@@ -150,8 +150,12 @@ const styles = StyleSheet.create({
   },
   grid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 12,
     marginBottom: 12,
+  },
+  gridTablet: {
+    flexWrap: 'nowrap',
   },
   statCard: {
     flex: 1,

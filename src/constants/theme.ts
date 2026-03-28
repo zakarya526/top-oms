@@ -60,8 +60,13 @@ export const Spacing = {
   six: 64,
 } as const;
 
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
+export const BottomTabInset = Platform.select({ ios: 84, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+export const Breakpoints = {
+  medium: 768,
+  wide: 1024,
+} as const;
 
 export const StatusColors = {
   pending: '#F59E0B',

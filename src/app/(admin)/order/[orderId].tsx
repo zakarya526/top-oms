@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
   },
   totalLabel: { fontSize: 20, fontWeight: '700' },
   totalAmount: { fontSize: 22, fontWeight: '700', color: AdminColor },
-  actions: { padding: Spacing.three, gap: Spacing.two },
+  actions: { padding: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.two },
   actionBtn: { padding: Spacing.three, borderRadius: 12, alignItems: 'center' },
   actionBtnText: { color: '#fff', fontSize: 17, fontWeight: '600' },
   cancelBtn: {

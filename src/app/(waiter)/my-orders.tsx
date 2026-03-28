@@ -8,6 +8,7 @@ import { OrderCard } from '@/components/OrderCard';
 import { BrandColor, BrandColorLight, CardShadow, Colors, Spacing, StatusColors } from '@/constants/theme';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useOrders } from '@/lib/hooks/useOrders';
+import { useResponsive } from '@/lib/hooks/useResponsive';
 
 export default function MyOrdersScreen() {
   const { profile } = useAuth();
@@ -16,8 +17,8 @@ export default function MyOrdersScreen() {
     status: ['pending', 'preparing', 'ready', 'served'],
   });
 
-  const readyCount = orders.filter((o) => o.status === 'ready').length;
-  const kitchenCount = orders.filter((o) => o.status === 'pending' || o.status === 'preparing').length;
+  const { numColumns: getColumns } = useResponsive();
+  const columns = getColumns({ compact: 1, medium: 2, wide: 2 });
 
   if (loading) return <LoadingScreen />;
 
@@ -27,10 +28,12 @@ export default function MyOrdersScreen() {
 
   return (
     <FlatList
+      key={`my-orders-${columns}`}
       data={orders}
       keyExtractor={(item) => item.id}
+      numColumns={columns}
       contentContainerStyle={styles.list}
-      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      columnWrapperStyle={columns > 1 ? styles.columnWrapper : undefined}
       ListHeaderComponent={
         <View style={styles.header}>
           <View>
@@ -46,11 +49,13 @@ export default function MyOrdersScreen() {
       ListHeaderComponentStyle={styles.headerWrapper}
       stickyHeaderIndices={[0]}
       renderItem={({ item }) => (
-        <OrderCard
-          order={item}
-          showTable
-          onPress={() => router.push(`/(waiter)/order/${item.id}`)}
-        />
+        <View style={styles.cardWrapper}>
+          <OrderCard
+            order={item}
+            showTable
+            onPress={() => router.push(`/(waiter)/order/${item.id}`)}
+          />
+        </View>
       )}
     />
   );
@@ -60,9 +65,13 @@ const styles = StyleSheet.create({
   list: {
     padding: Spacing.three,
     paddingBottom: 100,
+    gap: 12,
   },
-  separator: {
-    height: 12,
+  columnWrapper: {
+    gap: 12,
+  },
+  cardWrapper: {
+    flex: 1,
   },
   headerWrapper: {
     backgroundColor: Colors.light.background,

@@ -11,7 +11,15 @@ import {
 } from 'react-native';
 
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { Colors, Spacing, AdminColor } from '@/constants/theme';
+import {
+  BrandColor,
+  BrandColorLight,
+  CardShadow,
+  Colors,
+  Spacing,
+  ModalOverlayColor,
+  PlaceholderColor,
+} from '@/constants/theme';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useTables } from '@/lib/hooks/useTables';
 import { supabase } from '@/lib/supabase';
@@ -90,12 +98,15 @@ export default function AdminTablesScreen() {
             <View style={styles.rowInfo}>
               <Text style={styles.rowName}>{item.label || `Table ${item.table_number}`}</Text>
               <Text style={styles.rowMeta}>
-                #{item.table_number} {item.capacity ? `- ${item.capacity} seats` : ''} - {item.status}
+                #{item.table_number} {item.capacity ? `· ${item.capacity} seats` : ''} · {item.status}
               </Text>
             </View>
             <View style={[styles.statusDot, item.status === 'occupied' ? styles.dotOccupied : styles.dotAvailable]} />
-            <Pressable onPress={() => handleDelete(item.id, item.label || `Table ${item.table_number}`)}>
-              <Text style={styles.deleteIcon}>&#10005;</Text>
+            <Pressable
+              style={styles.deleteBtn}
+              onPress={() => handleDelete(item.id, item.label || `Table ${item.table_number}`)}
+            >
+              <Text style={styles.deleteIcon}>✕</Text>
             </Pressable>
           </Pressable>
         )}
@@ -111,15 +122,18 @@ export default function AdminTablesScreen() {
             <Text style={styles.modalTitle}>{editId ? 'Edit Table' : 'New Table'}</Text>
             <TextInput
               style={styles.modalInput} placeholder="Table number"
+              placeholderTextColor={PlaceholderColor}
               value={form.number} onChangeText={(v) => setForm((f) => ({ ...f, number: v }))}
               keyboardType="number-pad"
             />
             <TextInput
               style={styles.modalInput} placeholder="Label (optional)"
+              placeholderTextColor={PlaceholderColor}
               value={form.label} onChangeText={(v) => setForm((f) => ({ ...f, label: v }))}
             />
             <TextInput
               style={styles.modalInput} placeholder="Capacity (optional)"
+              placeholderTextColor={PlaceholderColor}
               value={form.capacity} onChangeText={(v) => setForm((f) => ({ ...f, capacity: v }))}
               keyboardType="number-pad"
             />
@@ -139,50 +153,127 @@ export default function AdminTablesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.light.background },
-  list: { padding: Spacing.three },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.light.background,
+  },
+  list: {
+    padding: Spacing.three,
+  },
   row: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingVertical: Spacing.three, paddingHorizontal: Spacing.three,
-    backgroundColor: Colors.light.backgroundElement, borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: Spacing.three,
+    paddingHorizontal: Spacing.three,
+    backgroundColor: Colors.light.card,
+    borderRadius: 16,
     marginBottom: Spacing.two,
+    ...CardShadow,
   },
-  rowInfo: { flex: 1 },
-  rowName: { fontSize: 17, fontWeight: '600', color: Colors.light.text },
-  rowMeta: { fontSize: 13, color: Colors.light.textSecondary, marginTop: 2 },
-  statusDot: { width: 10, height: 10, borderRadius: 5, marginRight: Spacing.two },
-  dotAvailable: { backgroundColor: '#10B981' },
-  dotOccupied: { backgroundColor: '#EF4444' },
-  deleteIcon: { fontSize: 16, color: '#DC2626', padding: Spacing.two },
+  rowInfo: {
+    flex: 1,
+  },
+  rowName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.light.text,
+  },
+  rowMeta: {
+    fontSize: 13,
+    color: Colors.light.textSecondary,
+    marginTop: 2,
+  },
+  statusDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginRight: 12,
+  },
+  dotAvailable: {
+    backgroundColor: '#10B981',
+  },
+  dotOccupied: {
+    backgroundColor: BrandColor,
+  },
+  deleteBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FEE2E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  deleteIcon: {
+    fontSize: 12,
+    color: '#DC2626',
+    fontWeight: '700',
+  },
   fab: {
-    position: 'absolute', bottom: Spacing.four, right: Spacing.four,
-    backgroundColor: AdminColor, paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.three, borderRadius: 28,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2, shadowRadius: 4, elevation: 4,
+    position: 'absolute',
+    bottom: Spacing.four,
+    right: Spacing.four,
+    backgroundColor: BrandColor,
+    paddingHorizontal: Spacing.four,
+    paddingVertical: 14,
+    borderRadius: 28,
+    ...CardShadow,
+    shadowColor: BrandColor,
+    shadowOpacity: 0.3,
   },
-  fabText: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  fabText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
   modalOverlay: {
-    flex: 1, justifyContent: 'center', alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)', padding: Spacing.four,
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: ModalOverlayColor,
+    padding: Spacing.four,
   },
   modalContent: {
-    backgroundColor: '#fff', borderRadius: 16, padding: Spacing.four,
-    width: '100%', maxWidth: 400, gap: Spacing.two,
+    backgroundColor: Colors.light.card,
+    borderRadius: 20,
+    padding: Spacing.four,
+    width: '100%',
+    maxWidth: 400,
+    gap: Spacing.two,
+    ...CardShadow,
   },
-  modalTitle: { fontSize: 20, fontWeight: '700', marginBottom: Spacing.two },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: Colors.light.text,
+    marginBottom: Spacing.two,
+  },
   modalInput: {
-    backgroundColor: Colors.light.backgroundElement, borderRadius: 12,
-    padding: Spacing.three, fontSize: 16,
+    backgroundColor: Colors.light.backgroundElement,
+    borderRadius: 14,
+    padding: Spacing.three,
+    fontSize: 16,
+    color: Colors.light.text,
   },
   modalActions: {
-    flexDirection: 'row', justifyContent: 'flex-end', gap: Spacing.three,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: Spacing.three,
     marginTop: Spacing.two,
   },
-  modalCancel: { fontSize: 16, color: Colors.light.textSecondary, padding: Spacing.two },
-  modalSaveBtn: {
-    backgroundColor: AdminColor, paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.two, borderRadius: 8,
+  modalCancel: {
+    fontSize: 16,
+    color: Colors.light.textSecondary,
+    padding: Spacing.two,
   },
-  modalSaveText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  modalSaveBtn: {
+    backgroundColor: BrandColor,
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.two,
+    borderRadius: 12,
+  },
+  modalSaveText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '700',
+  },
 });

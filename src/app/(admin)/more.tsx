@@ -59,9 +59,11 @@ const styles = StyleSheet.create({
     color: Colors.light.textSecondary,
   },
   signOutButton: {
-    margin: Spacing.four,
+    marginHorizontal: Spacing.four,
+    marginTop: Spacing.four,
+    marginBottom: Spacing.six + 32,
     padding: Spacing.three,
-    borderRadius: 12,
+    borderRadius: 16,
     backgroundColor: '#DC2626',
     alignItems: 'center',
   },

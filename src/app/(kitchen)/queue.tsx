@@ -19,10 +19,10 @@ import {
   Spacing,
   StatusColors,
   StatusBackgrounds,
-  DangerColor,
 } from '@/constants/theme';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useOrders, OrderWithItems } from '@/lib/hooks/useOrders';
+import { useResponsive } from '@/lib/hooks/useResponsive';
 import { supabase } from '@/lib/supabase';
 import { getTimeSince } from '@/lib/utils/getTimeSince';
 
@@ -40,8 +40,8 @@ export default function KitchenQueueScreen() {
     return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
   });
 
-  const pendingCount = orders.filter((o) => o.status === 'pending').length;
-  const preparingCount = orders.filter((o) => o.status === 'preparing').length;
+  const { numColumns: getColumns } = useResponsive();
+  const columns = getColumns({ compact: 1, medium: 2, wide: 3 });
 
   async function handleStatusChange(orderId: string, newStatus: 'preparing' | 'ready') {
     await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
@@ -56,10 +56,12 @@ export default function KitchenQueueScreen() {
   return (
     <View style={styles.container}>
       <FlatList
+        key={`kitchen-${columns}`}
         data={sorted}
         keyExtractor={(item) => item.id}
+        numColumns={columns}
         contentContainerStyle={styles.list}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        columnWrapperStyle={columns > 1 ? styles.columnWrapper : undefined}
         ListHeaderComponent={
           <View style={styles.header}>
             <View style={styles.headerTop}>
@@ -84,16 +86,15 @@ export default function KitchenQueueScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <KitchenOrderCard
-            order={item}
-            onStatusChange={handleStatusChange}
-            onPress={() => router.push(`/(kitchen)/order/${item.id}`)}
-          />
+          <View style={styles.cardWrapper}>
+            <KitchenOrderCard
+              order={item}
+              onStatusChange={handleStatusChange}
+              onPress={() => router.push(`/(kitchen)/order/${item.id}`)}
+            />
+          </View>
         )}
       />
-      <Pressable style={styles.signOut} onPress={signOut}>
-        <Text style={styles.signOutText}>Sign Out</Text>
-      </Pressable>
     </View>
   );
 }
@@ -192,18 +193,38 @@ const styles = StyleSheet.create({
   list: {
     padding: Spacing.three,
     paddingBottom: 80,
+    gap: 12,
   },
-  separator: {
-    height: 12,
+  columnWrapper: {
+    gap: 12,
+  },
+  cardWrapper: {
+    flex: 1,
   },
   header: {
+    marginBottom: Spacing.three,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: Spacing.three,
   },
   liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    marginBottom: Spacing.three,
+  },
+  signOutBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: '#FEE2E2',
+  },
+  signOutBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#DC2626',
   },
   liveDot: {
     width: 10,
@@ -349,14 +370,5 @@ const styles = StyleSheet.create({
     color: StatusColors.ready,
     fontSize: 14,
     fontWeight: '800',
-  },
-  signOut: {
-    padding: Spacing.three,
-    alignItems: 'center',
-  },
-  signOutText: {
-    color: DangerColor,
-    fontSize: 15,
-    fontWeight: '500',
   },
 });

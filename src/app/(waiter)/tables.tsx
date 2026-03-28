@@ -7,6 +7,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { TableCard } from '@/components/TableCard';
 import { BrandColor, Colors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { useResponsive } from '@/lib/hooks/useResponsive';
 import { useTables } from '@/lib/hooks/useTables';
 import { useOrderStore } from '@/lib/stores/orderStore';
 
@@ -16,8 +17,8 @@ export default function TablesScreen() {
   const setTable = useOrderStore((s) => s.setTable);
   const clearCart = useOrderStore((s) => s.clearCart);
 
-  const occupiedCount = tables.filter((t) => t.status === 'occupied').length;
-  const availableCount = tables.filter((t) => t.status === 'available').length;
+  const { numColumns: getColumns } = useResponsive();
+  const columns = getColumns({ compact: 3, medium: 4, wide: 5 });
 
   function handleSelectTable(tableId: string) {
     clearCart();
@@ -30,9 +31,10 @@ export default function TablesScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <FlatList
+        key={`tables-${columns}`}
         data={tables}
         keyExtractor={(item) => item.id}
-        numColumns={3}
+        numColumns={columns}
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.row}
         ListHeaderComponent={
@@ -85,7 +87,6 @@ const styles = StyleSheet.create({
   },
   cell: {
     flex: 1,
-    maxWidth: '33%',
   },
   headerWrapper: {
     marginBottom: Spacing.three,

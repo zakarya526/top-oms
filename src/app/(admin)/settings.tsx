@@ -10,7 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { Colors, Spacing, AdminColor } from '@/constants/theme';
+import { BrandColor, CardShadow, Colors, Spacing, PlaceholderColor } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/lib/types/database';
 
@@ -58,22 +58,24 @@ export default function AdminSettingsScreen() {
         <Text style={styles.heading}>Restaurant Settings</Text>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Restaurant Name</Text>
+          <Text style={styles.label}>RESTAURANT NAME</Text>
           <TextInput
             style={styles.input}
             value={name}
             onChangeText={setName}
             placeholder="Restaurant name"
+            placeholderTextColor={PlaceholderColor}
           />
         </View>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Currency</Text>
+          <Text style={styles.label}>CURRENCY</Text>
           <TextInput
             style={styles.input}
             value={currency}
             onChangeText={setCurrency}
             placeholder="GBP"
+            placeholderTextColor={PlaceholderColor}
             autoCapitalize="characters"
           />
         </View>
@@ -91,18 +93,48 @@ export default function AdminSettingsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.light.background },
-  form: { padding: Spacing.four, gap: Spacing.three },
-  heading: { fontSize: 22, fontWeight: '700', color: Colors.light.text },
-  field: { gap: Spacing.one },
-  label: { fontSize: 14, fontWeight: '600', color: Colors.light.textSecondary },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.light.background,
+  },
+  form: {
+    padding: Spacing.four,
+    gap: Spacing.four,
+  },
+  heading: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.light.text,
+  },
+  field: {
+    gap: 8,
+  },
+  label: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.light.textSecondary,
+    letterSpacing: 1,
+  },
   input: {
-    backgroundColor: Colors.light.backgroundElement, borderRadius: 12,
-    padding: Spacing.three, fontSize: 16, color: Colors.light.text,
+    backgroundColor: Colors.light.backgroundElement,
+    borderRadius: 14,
+    padding: Spacing.three,
+    fontSize: 16,
+    color: Colors.light.text,
   },
   saveBtn: {
-    backgroundColor: AdminColor, padding: Spacing.three,
-    borderRadius: 12, alignItems: 'center', marginTop: Spacing.two,
+    backgroundColor: BrandColor,
+    paddingVertical: 16,
+    borderRadius: 28,
+    alignItems: 'center',
+    marginTop: Spacing.two,
+    ...CardShadow,
+    shadowColor: BrandColor,
+    shadowOpacity: 0.3,
   },
-  saveBtnText: { color: '#fff', fontSize: 17, fontWeight: '600' },
+  saveBtnText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '700',
+  },
 });

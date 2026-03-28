@@ -14,6 +14,7 @@ import { MenuItemCard } from '@/components/MenuItemCard';
 import { BottomTabInset, BrandColor, BrandColorLight, CardShadow, Colors, Spacing } from '@/constants/theme';
 import { useMenu } from '@/lib/hooks/useMenu';
 import { useOrderStore } from '@/lib/stores/orderStore';
+import { useResponsive } from '@/lib/hooks/useResponsive';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 export default function MenuScreen() {
@@ -22,6 +23,8 @@ export default function MenuScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const { items, addItem, removeItem, getTotal, getItemCount } = useOrderStore();
+  const { numColumns: getColumns } = useResponsive();
+  const columns = getColumns({ compact: 1, medium: 2, wide: 2 });
 
   const activeCategoryId = selectedCategory || categories[0]?.id;
   const categoryItems = activeCategoryId ? getItemsByCategory(activeCategoryId) : [];
@@ -41,6 +44,7 @@ export default function MenuScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={styles.categoryTabsScroll}
         contentContainerStyle={styles.categoryTabs}
       >
         {categories.map((cat) => (
@@ -66,8 +70,11 @@ export default function MenuScreen() {
 
       {/* Menu items */}
       <FlatList
+        key={`menu-${columns}`}
         data={categoryItems}
         keyExtractor={(item) => item.id}
+        numColumns={columns}
+        columnWrapperStyle={columns > 1 ? styles.columnWrapper : undefined}
         renderItem={({ item }) => (
           <MenuItemCard
             item={item}
@@ -103,6 +110,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.light.background,
   },
+  categoryTabsScroll: {
+    flexGrow: 0,
+  },
   categoryTabs: {
     paddingHorizontal: Spacing.three,
     paddingVertical: 12,
@@ -127,7 +137,12 @@ const styles = StyleSheet.create({
   },
   itemList: {
     paddingTop: Spacing.two,
+    paddingHorizontal: Spacing.three,
     paddingBottom: 160 + BottomTabInset,
+    gap: Spacing.two,
+  },
+  columnWrapper: {
+    gap: Spacing.two,
   },
   cartBar: {
     position: 'absolute',
