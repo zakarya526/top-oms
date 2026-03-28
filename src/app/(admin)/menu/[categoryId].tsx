@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { Colors, Spacing, AdminColor } from '@/constants/theme';
+import { BrandColor, Colors, Spacing } from '@/constants/theme';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useMenu } from '@/lib/hooks/useMenu';
 import { supabase } from '@/lib/supabase';
@@ -118,7 +118,7 @@ export default function AdminCategoryItemsScreen() {
               <Switch
                 value={item.is_available}
                 onValueChange={() => toggleAvailability(item.id, item.is_available)}
-                trackColor={{ true: AdminColor }}
+                trackColor={{ true: BrandColor }}
               />
               <Pressable onPress={() => handleDelete(item.id, item.name)}>
                 <Text style={styles.deleteIcon}>&#10005;</Text>
@@ -186,12 +186,12 @@ const styles = StyleSheet.create({
   rowInfo: { flex: 1 },
   rowName: { fontSize: 16, fontWeight: '500', color: Colors.light.text },
   textUnavailable: { textDecorationLine: 'line-through' },
-  rowPrice: { fontSize: 14, color: AdminColor, fontWeight: '600', marginTop: 2 },
+  rowPrice: { fontSize: 14, color: BrandColor, fontWeight: '600', marginTop: 2 },
   rowActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   deleteIcon: { fontSize: 16, color: '#DC2626', padding: Spacing.two },
   fab: {
     position: 'absolute', bottom: Spacing.four, right: Spacing.four,
-    backgroundColor: AdminColor, paddingHorizontal: Spacing.four,
+    backgroundColor: BrandColor, paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.three, borderRadius: 28,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2, shadowRadius: 4, elevation: 4,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   },
   modalCancel: { fontSize: 16, color: Colors.light.textSecondary, padding: Spacing.two },
   modalSaveBtn: {
-    backgroundColor: AdminColor, paddingHorizontal: Spacing.four,
+    backgroundColor: BrandColor, paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.two, borderRadius: 8,
   },
   modalSaveText: { color: '#fff', fontSize: 16, fontWeight: '600' },

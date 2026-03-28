@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { StatusBadge } from '@/components/StatusBadge';
-import { Colors, Spacing, AdminColor, StatusColors, DangerColor, DangerBackground } from '@/constants/theme';
+import { BrandColor, Colors, DangerBackground, DangerColor, Spacing, StatusColors } from '@/constants/theme';
 import { useOrder } from '@/lib/hooks/useOrders';
 import { updateOrderStatus } from '@/lib/utils/updateOrderStatus';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.light.backgroundElement,
   },
-  itemQty: { fontSize: 15, fontWeight: '600', color: AdminColor, width: 36 },
+  itemQty: { fontSize: 15, fontWeight: '600', color: BrandColor, width: 36 },
   itemName: { flex: 1, fontSize: 15 },
   itemPrice: { fontSize: 15, fontWeight: '600' },
   totalRow: {
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 2, borderTopColor: Colors.light.backgroundElement,
   },
   totalLabel: { fontSize: 20, fontWeight: '700' },
-  totalAmount: { fontSize: 22, fontWeight: '700', color: AdminColor },
+  totalAmount: { fontSize: 22, fontWeight: '700', color: BrandColor },
   actions: { padding: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.two },
   actionBtn: { padding: Spacing.three, borderRadius: 12, alignItems: 'center' },
   actionBtnText: { color: '#fff', fontSize: 17, fontWeight: '600' },

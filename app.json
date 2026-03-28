@@ -2,6 +2,7 @@
   "expo": {
     "name": "top-oms",
     "slug": "top-oms",
+    "owner": "zaki45",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -12,6 +13,7 @@
       "bundleIdentifier": "com.zaki45.top-oms"
     },
     "android": {
+      "package": "com.zaki45.topoms",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -41,6 +43,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "31b939f1-89ba-4acc-ae24-83b3e9ef32e6"
+      }
     }
   }
 }

@@ -13,6 +13,7 @@ import {
 } from '@/constants/theme';
 import { useResponsive } from '@/lib/hooks/useResponsive';
 import { supabase } from '@/lib/supabase';
+import { formatCurrency } from '@/lib/utils/formatCurrency';
 
 interface Stats {
   totalOrders: number;
@@ -21,6 +22,7 @@ interface Stats {
   readyOrders: number;
   occupiedTables: number;
   totalTables: number;
+  revenueToday: number;
 }
 
 export default function AdminDashboardScreen() {
@@ -40,13 +42,21 @@ export default function AdminDashboardScreen() {
   }, []);
 
   async function fetchStats() {
-    const [ordersRes, tablesRes] = await Promise.all([
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [ordersRes, tablesRes, revenueRes] = await Promise.all([
       supabase.from('orders').select('status'),
       supabase.from('tables').select('status'),
+      supabase.from('orders')
+        .select('total_amount')
+        .in('status', ['served', 'completed'])
+        .gte('created_at', today.toISOString()),
     ]);
 
     const orders = ordersRes.data || [];
     const tables = tablesRes.data || [];
+    const revenueOrders = revenueRes.data || [];
 
     setStats({
       totalOrders: orders.filter((o) => !['completed', 'cancelled'].includes(o.status)).length,
@@ -55,6 +65,7 @@ export default function AdminDashboardScreen() {
       readyOrders: orders.filter((o) => o.status === 'ready').length,
       occupiedTables: tables.filter((t) => t.status === 'occupied').length,
       totalTables: tables.length,
+      revenueToday: revenueOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0),
     });
     setLoading(false);
   }
@@ -86,11 +97,11 @@ export default function AdminDashboardScreen() {
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statValue}>{stats.pendingOrders + stats.preparingOrders}</Text>
-          <Text style={styles.statLabel}>STAFF ON{'\n'}DUTY</Text>
+          <Text style={styles.statLabel}>IN{'\n'}KITCHEN</Text>
         </View>
         <View style={[styles.statCard, styles.revenueCard]}>
           <Text style={styles.revenueIcon}>💰</Text>
-          <Text style={styles.revenueValue}>$4,820</Text>
+          <Text style={styles.revenueValue}>{formatCurrency(stats.revenueToday)}</Text>
           <Text style={styles.revenueLabel}>REVENUE TODAY</Text>
         </View>
       </View>
