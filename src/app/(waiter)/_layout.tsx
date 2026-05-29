@@ -1,9 +1,19 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, Text } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text } from 'react-native';
 
 import { RoleGate } from '@/components/RoleGate';
 import { BrandColor, Colors } from '@/constants/theme';
+import { useAuth } from '@/lib/hooks/useAuth';
+
+function SignOutButton() {
+  const { signOut } = useAuth();
+  return (
+    <Pressable style={styles.signOutBtn} onPress={signOut}>
+      <Text style={styles.signOutBtnText}>Sign Out</Text>
+    </Pressable>
+  );
+}
 
 export default function WaiterLayout() {
   return (
@@ -41,6 +51,7 @@ export default function WaiterLayout() {
         options={{
           title: 'Orders',
           tabBarIcon: ({ color }) => <Text style={{ fontSize: 20, color }}>&#9776;</Text>,
+          headerRight: () => <SignOutButton />,
         }}
       />
       <Tabs.Screen
@@ -57,3 +68,18 @@ export default function WaiterLayout() {
     </RoleGate>
   );
 }
+
+const styles = StyleSheet.create({
+  signOutBtn: {
+    marginRight: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: '#FEE2E2',
+  },
+  signOutBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#DC2626',
+  },
+});

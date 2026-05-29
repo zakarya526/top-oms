@@ -3,6 +3,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import React, { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
+import { UpdateBanner } from '@/components/UpdateBanner';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { AuthProvider } from '@/lib/providers/AuthProvider';
 import { UpdatesProvider } from '@/lib/providers/UpdatesProvider';
@@ -48,6 +49,7 @@ export default function RootLayout() {
             <Stack.Screen name="(kitchen)" />
             <Stack.Screen name="(admin)" />
           </Stack>
+          <UpdateBanner />
         </AuthProvider>
       </UpdatesProvider>
     </ThemeProvider>

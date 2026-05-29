@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { createContext, useCallback, useEffect, useMemo } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
 /**
@@ -29,22 +29,27 @@ const CHECK_INTERVAL_MS = 15 * 60 * 1000;
 
 interface UpdatesContextType {
   /**
-   * Defer OTA reloads while the app is in a flow that must not be interrupted
-   * (an order being edited, a payment in flight, …). Call `blockUpdates(true)`
-   * when entering such a flow and `blockUpdates(false)` when leaving it; an
-   * update that downloaded in the meantime is applied as soon as it's unblocked.
+   * True once a new OTA update has finished downloading and is staged, ready to
+   * install. Drives the "Update available" banner. We never reload on our own —
+   * a silent restart could interrupt an order or payment — so the user taps the
+   * banner to apply it at a moment that suits them.
    */
-  blockUpdates: (blocked: boolean) => void;
+  isUpdatePending: boolean;
+  /** Restart the app to install the downloaded update. */
+  applyUpdate: () => Promise<void>;
 }
 
 export const UpdatesContext = createContext<UpdatesContextType>({
-  blockUpdates: () => {},
+  isUpdatePending: false,
+  applyUpdate: async () => {},
 });
 
 /** Used when the native module is unavailable: just passes children through. */
 function NoopUpdatesProvider({ children }: { children: React.ReactNode }) {
   return (
-    <UpdatesContext.Provider value={{ blockUpdates: () => {} }}>{children}</UpdatesContext.Provider>
+    <UpdatesContext.Provider value={{ isUpdatePending: false, applyUpdate: async () => {} }}>
+      {children}
+    </UpdatesContext.Provider>
   );
 }
 
@@ -52,30 +57,8 @@ function NoopUpdatesProvider({ children }: { children: React.ReactNode }) {
 function ActiveUpdatesProvider({ children }: { children: React.ReactNode }) {
   const { isUpdatePending } = Updates!.useUpdates();
 
-  const blockedRef = useRef(false);
-  const pendingRef = useRef(false);
-
-  // Mirror the staged-update flag into a ref so the imperative "flush on unblock"
-  // path can read the latest value without re-subscribing.
-  useEffect(() => {
-    pendingRef.current = isUpdatePending;
-  }, [isUpdatePending]);
-
-  // Apply a downloaded update, but only at a safe moment. reloadAsync() restarts
-  // the app and drops in-memory state, so we never fire it mid-critical-flow, and
-  // never while backgrounded (where reloadAsync is documented as unstable).
-  const applyIfSafe = useCallback(async () => {
-    if (!pendingRef.current || blockedRef.current) return;
-    if (AppState.currentState !== 'active') return;
-    try {
-      await Updates!.reloadAsync();
-    } catch {
-      // Leave the update staged; we'll retry on the next safe moment / boot.
-    }
-  }, []);
-
   // Ask the server for a new update and download it in the background. The
-  // download completing flips `isUpdatePending`, which drives the apply effect.
+  // download completing flips `isUpdatePending`, which surfaces the banner.
   const checkAndFetch = useCallback(async () => {
     if (!Updates!.isEnabled) return; // dev / Expo Go — nothing to do
     try {
@@ -86,20 +69,17 @@ function ActiveUpdatesProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Whenever an update becomes staged (from our fetch or the launch-time check),
-  // try to apply it.
-  useEffect(() => {
-    if (isUpdatePending) void applyIfSafe();
-  }, [isUpdatePending, applyIfSafe]);
+  // Restart into the staged update. reloadAsync() drops in-memory state, so we
+  // only ever call this in response to an explicit user tap on the banner.
+  const applyUpdate = useCallback(async () => {
+    await Updates!.reloadAsync();
+  }, []);
 
   useEffect(() => {
     void checkAndFetch();
 
     const subscription = AppState.addEventListener('change', (state: AppStateStatus) => {
-      if (state === 'active') {
-        void checkAndFetch();
-        void applyIfSafe(); // apply anything staged while we were backgrounded
-      }
+      if (state === 'active') void checkAndFetch();
     });
 
     const interval = setInterval(() => void checkAndFetch(), CHECK_INTERVAL_MS);
@@ -108,26 +88,18 @@ function ActiveUpdatesProvider({ children }: { children: React.ReactNode }) {
       subscription.remove();
       clearInterval(interval);
     };
-  }, [checkAndFetch, applyIfSafe]);
+  }, [checkAndFetch]);
 
-  const blockUpdates = useCallback(
-    (blocked: boolean) => {
-      blockedRef.current = blocked;
-      if (!blocked) void applyIfSafe(); // flush a waiting update
-    },
-    [applyIfSafe],
-  );
-
-  const value = useMemo(() => ({ blockUpdates }), [blockUpdates]);
+  const value = useMemo(() => ({ isUpdatePending, applyUpdate }), [isUpdatePending, applyUpdate]);
 
   return <UpdatesContext.Provider value={value}>{children}</UpdatesContext.Provider>;
 }
 
 /**
- * Silently keeps the app on the latest published OTA update. It checks on mount,
- * on every return to the foreground, and on a timer; downloads new updates in
- * the background; and reloads the app to apply them — but only when it's safe
- * (foregrounded, and no critical flow has called `blockUpdates(true)`).
+ * Quietly downloads the latest published OTA update in the background — on mount,
+ * on every return to the foreground, and on a timer — then exposes a pending
+ * flag so the UI can offer an "Update" button. It never reloads on its own; the
+ * user decides when to apply, so a restart never interrupts a live order.
  *
  * Resolves to a no-op when the expo-updates native module isn't present (so it
  * never crashes a build made before the module was added, or web).
