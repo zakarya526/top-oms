@@ -1,6 +1,23 @@
-import * as Updates from 'expo-updates';
 import React, { createContext, useCallback, useEffect, useMemo, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
+
+/**
+ * expo-updates is a native module. A build created BEFORE it was added (a stale
+ * dev client, web, …) doesn't contain the native side, and importing it throws
+ * "Cannot find native module 'ExpoUpdates'" at load time — which would crash the
+ * whole app. Load it defensively so the provider degrades to a no-op until a
+ * build that actually includes the module is installed. Updates are disabled in
+ * dev builds regardless, so the no-op costs nothing there.
+ */
+let Updates: typeof import('expo-updates') | undefined;
+try {
+  // require (not import) so a missing native module is catchable rather than a
+  // hard load-time crash.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Updates = require('expo-updates');
+} catch {
+  Updates = undefined;
+}
 
 /**
  * How often to poll for a new OTA update on always-on devices. Kitchen displays
@@ -24,17 +41,16 @@ export const UpdatesContext = createContext<UpdatesContextType>({
   blockUpdates: () => {},
 });
 
-/**
- * Silently keeps the app on the latest published OTA update. It checks on mount,
- * on every return to the foreground, and on a timer; downloads new updates in
- * the background; and reloads the app to apply them — but only when it's safe
- * (foregrounded, and no critical flow has called `blockUpdates(true)`).
- *
- * No-ops entirely in Expo Go / development builds, where expo-updates is disabled
- * and the JS is always served from the dev server.
- */
-export function UpdatesProvider({ children }: { children: React.ReactNode }) {
-  const { isUpdatePending } = Updates.useUpdates();
+/** Used when the native module is unavailable: just passes children through. */
+function NoopUpdatesProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <UpdatesContext.Provider value={{ blockUpdates: () => {} }}>{children}</UpdatesContext.Provider>
+  );
+}
+
+/** The real provider — only mounted when the expo-updates native module loaded. */
+function ActiveUpdatesProvider({ children }: { children: React.ReactNode }) {
+  const { isUpdatePending } = Updates!.useUpdates();
 
   const blockedRef = useRef(false);
   const pendingRef = useRef(false);
@@ -52,7 +68,7 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
     if (!pendingRef.current || blockedRef.current) return;
     if (AppState.currentState !== 'active') return;
     try {
-      await Updates.reloadAsync();
+      await Updates!.reloadAsync();
     } catch {
       // Leave the update staged; we'll retry on the next safe moment / boot.
     }
@@ -61,10 +77,10 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
   // Ask the server for a new update and download it in the background. The
   // download completing flips `isUpdatePending`, which drives the apply effect.
   const checkAndFetch = useCallback(async () => {
-    if (!Updates.isEnabled) return; // dev / Expo Go — nothing to do
+    if (!Updates!.isEnabled) return; // dev / Expo Go — nothing to do
     try {
-      const { isAvailable } = await Updates.checkForUpdateAsync();
-      if (isAvailable) await Updates.fetchUpdateAsync();
+      const { isAvailable } = await Updates!.checkForUpdateAsync();
+      if (isAvailable) await Updates!.fetchUpdateAsync();
     } catch {
       // Offline or transient server error — try again on the next trigger.
     }
@@ -106,3 +122,14 @@ export function UpdatesProvider({ children }: { children: React.ReactNode }) {
 
   return <UpdatesContext.Provider value={value}>{children}</UpdatesContext.Provider>;
 }
+
+/**
+ * Silently keeps the app on the latest published OTA update. It checks on mount,
+ * on every return to the foreground, and on a timer; downloads new updates in
+ * the background; and reloads the app to apply them — but only when it's safe
+ * (foregrounded, and no critical flow has called `blockUpdates(true)`).
+ *
+ * Resolves to a no-op when the expo-updates native module isn't present (so it
+ * never crashes a build made before the module was added, or web).
+ */
+export const UpdatesProvider = Updates ? ActiveUpdatesProvider : NoopUpdatesProvider;
