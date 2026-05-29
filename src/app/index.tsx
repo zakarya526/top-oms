@@ -1,10 +1,11 @@
 import { Redirect } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
+import { ProfileErrorScreen } from '@/components/ProfileErrorScreen';
 import { useAuth } from '@/lib/hooks/useAuth';
 
 export default function Index() {
-  const { session, profile, loading } = useAuth();
+  const { session, profile, profileError, loading, refreshProfile } = useAuth();
 
   if (loading) {
     return (
@@ -18,9 +19,13 @@ export default function Index() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  // Signed in but no profile yet → account exists without a restaurant.
-  // Send them to finish onboarding (create their restaurant).
   if (!profile) {
+    // Distinguish a failed profile fetch from a genuinely missing profile:
+    // a transient error gets a retry screen, while a successful fetch with no
+    // row means the account exists without a restaurant → finish onboarding.
+    if (profileError) {
+      return <ProfileErrorScreen onRetry={refreshProfile} />;
+    }
     return <Redirect href="/(auth)/signup" />;
   }
 

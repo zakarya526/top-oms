@@ -22,7 +22,7 @@ export default function MenuScreen() {
   const { categories, loading, getItemsByCategory } = useMenu();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const { items, addItem, removeItem, getTotal, getItemCount } = useOrderStore();
+  const { items, addItem, updateQuantity, getTotal, getItemCount } = useOrderStore();
   const { numColumns: getColumns } = useResponsive();
   const columns = getColumns({ compact: 1, medium: 2, wide: 2 });
 
@@ -80,7 +80,7 @@ export default function MenuScreen() {
             item={item}
             quantity={getQuantity(item.id)}
             onAdd={() => addItem(item)}
-            onRemove={() => removeItem(item.id)}
+            onRemove={() => updateQuantity(item.id, getQuantity(item.id) - 1)}
           />
         )}
         contentContainerStyle={styles.itemList}

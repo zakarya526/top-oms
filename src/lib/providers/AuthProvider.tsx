@@ -18,6 +18,10 @@ interface AuthContextType {
   session: Session | null;
   profile: UserProfile | null;
   loading: boolean;
+  /** True when the last profile fetch failed (network/RLS/transient) — as
+   *  opposed to the user genuinely having no profile row yet. Lets the router
+   *  show a retry screen instead of misrouting an onboarded user to signup. */
+  profileError: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<SignUpResult>;
   createRestaurant: (input: {
@@ -33,6 +37,7 @@ export const AuthContext = createContext<AuthContextType>({
   session: null,
   profile: null,
   loading: true,
+  profileError: false,
   signIn: async () => ({ error: null }),
   signUp: async () => ({ error: null, needsEmailConfirmation: false }),
   createRestaurant: async () => ({ error: null }),
@@ -44,6 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState(false);
 
   // Monotonic token so that, when several profile fetches overlap (e.g. the
   // auth listener fires while we're mid-signup), only the most recently started
@@ -74,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fetchProfile(session.user.id);
       } else {
         fetchSeq.current++; // invalidate any in-flight fetch
+        setProfileError(false);
         setProfile(null);
         setLoading(false);
       }
@@ -93,8 +100,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (seq !== fetchSeq.current) return; // superseded by a newer fetch
 
     if (error) {
+      // A failed fetch (network/RLS/transient) is NOT the same as "no profile
+      // row yet". Flag the error and keep any last-known-good profile so the
+      // router shows a retry screen instead of bouncing an onboarded user into
+      // the create-restaurant flow (where the RPC hard-rejects them).
       console.error('Error fetching profile:', error.message);
-      setProfile(null);
+      setProfileError(true);
       setLoading(false);
       return;
     }
@@ -102,6 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Deactivated accounts are blocked even though the JWT is still valid.
     // (The DB also denies them all tenant data via get_my_restaurant_id().)
     if (data && !data.is_active) {
+      setProfileError(false);
       setProfile(null);
       setLoading(false);
       await supabase.auth.signOut();
@@ -112,6 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    setProfileError(false);
     setProfile(data);
     setLoading(false);
   }
@@ -160,6 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signOut() {
     await supabase.auth.signOut();
     setSession(null);
+    setProfileError(false);
     setProfile(null);
   }
 
@@ -169,6 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session,
         profile,
         loading,
+        profileError,
         signIn,
         signUp,
         createRestaurant,
