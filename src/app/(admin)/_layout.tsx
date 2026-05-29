@@ -2,10 +2,12 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, Text } from 'react-native';
 
+import { RoleGate } from '@/components/RoleGate';
 import { BrandColor, Colors } from '@/constants/theme';
 
 export default function AdminLayout() {
   return (
+    <RoleGate role="admin">
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: BrandColor,
@@ -61,5 +63,6 @@ export default function AdminLayout() {
       <Tabs.Screen name="users" options={{ href: null, title: 'User Management' }} />
       <Tabs.Screen name="settings" options={{ href: null, title: 'Settings' }} />
     </Tabs>
+    </RoleGate>
   );
 }

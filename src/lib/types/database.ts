@@ -7,8 +7,10 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -24,7 +26,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
-          restaurant_id: string
+          restaurant_id?: string
           sort_order?: number
         }
         Update: {
@@ -64,7 +66,7 @@ export type Database = {
           is_available?: boolean
           name: string
           price: number
-          restaurant_id: string
+          restaurant_id?: string
           sort_order?: number
         }
         Update: {
@@ -116,7 +118,7 @@ export type Database = {
           notes?: string | null
           order_id: string
           quantity?: number
-          restaurant_id: string
+          restaurant_id?: string
         }
         Update: {
           created_at?: string
@@ -159,6 +161,7 @@ export type Database = {
           id: string
           notes: string | null
           restaurant_id: string
+          service_charge: number
           status: Database["public"]["Enums"]["order_status"]
           table_id: string
           total_amount: number
@@ -169,7 +172,8 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
-          restaurant_id: string
+          restaurant_id?: string
+          service_charge?: number
           status?: Database["public"]["Enums"]["order_status"]
           table_id: string
           total_amount?: number
@@ -181,6 +185,7 @@ export type Database = {
           id?: string
           notes?: string | null
           restaurant_id?: string
+          service_charge?: number
           status?: Database["public"]["Enums"]["order_status"]
           table_id?: string
           total_amount?: number
@@ -247,7 +252,7 @@ export type Database = {
           created_at?: string
           id?: string
           label?: string | null
-          restaurant_id: string
+          restaurant_id?: string
           status?: Database["public"]["Enums"]["table_status"]
           table_number: number
         }
@@ -310,10 +315,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_order: {
+        Args: { p_items: Json; p_notes: string; p_table_id: string }
+        Returns: string
+      }
+      create_restaurant_for_current_user: {
+        Args: {
+          admin_full_name: string
+          currency?: string
+          restaurant_name: string
+        }
+        Returns: string
+      }
       get_my_restaurant_id: { Args: never; Returns: string }
       get_my_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      seed_starter_data: {
+        Args: { p_restaurant_id: string }
+        Returns: undefined
+      }
+      set_order_status: {
+        Args: {
+          p_order_id: string
+          p_status: Database["public"]["Enums"]["order_status"]
+        }
+        Returns: undefined
       }
     }
     Enums: {

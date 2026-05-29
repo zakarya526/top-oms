@@ -14,7 +14,7 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Colors, Spacing, KitchenColor, StatusColors } from '@/constants/theme';
 import { useOrder } from '@/lib/hooks/useOrders';
-import { supabase } from '@/lib/supabase';
+import { updateOrderStatus } from '@/lib/utils/updateOrderStatus';
 import { getTimeSince } from '@/lib/utils/getTimeSince';
 
 export default function KitchenOrderDetailScreen() {
@@ -24,11 +24,8 @@ export default function KitchenOrderDetailScreen() {
   if (loading || !order) return <LoadingScreen />;
 
   async function handleStatusChange(newStatus: 'preparing' | 'ready') {
-    const { error } = await supabase
-      .from('orders')
-      .update({ status: newStatus })
-      .eq('id', orderId);
-    if (error) Alert.alert('Error', error.message);
+    const { error } = await updateOrderStatus(orderId, newStatus);
+    if (error) Alert.alert('Error', error);
     else router.back();
   }
 

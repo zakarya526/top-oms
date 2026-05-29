@@ -14,8 +14,14 @@ export default function Index() {
     );
   }
 
-  if (!session || !profile) {
+  if (!session) {
     return <Redirect href="/(auth)/login" />;
+  }
+
+  // Signed in but no profile yet → account exists without a restaurant.
+  // Send them to finish onboarding (create their restaurant).
+  if (!profile) {
+    return <Redirect href="/(auth)/signup" />;
   }
 
   switch (profile.role) {

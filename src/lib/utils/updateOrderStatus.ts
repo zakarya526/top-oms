@@ -3,21 +3,19 @@ import { Enums } from '@/lib/types/database';
 
 type OrderStatus = Enums<'order_status'>;
 
+/**
+ * Status changes go through the server-side state machine (set_order_status),
+ * which validates the transition + caller role and frees the table when no
+ * other active order remains.
+ */
 export async function updateOrderStatus(
   orderId: string,
-  tableId: string,
   newStatus: OrderStatus,
 ): Promise<{ error: string | null }> {
-  const { error } = await supabase
-    .from('orders')
-    .update({ status: newStatus })
-    .eq('id', orderId);
+  const { error } = await supabase.rpc('set_order_status', {
+    p_order_id: orderId,
+    p_status: newStatus,
+  });
 
-  if (error) return { error: error.message };
-
-  if (newStatus === 'completed' || newStatus === 'cancelled') {
-    await supabase.from('tables').update({ status: 'available' }).eq('id', tableId);
-  }
-
-  return { error: null };
+  return { error: error ? error.message : null };
 }

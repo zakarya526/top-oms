@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { OrderTotals } from '@/components/OrderTotals';
 import { StatusBadge } from '@/components/StatusBadge';
 import { BrandColor, Colors, DangerBackground, DangerColor, Spacing, StatusColors } from '@/constants/theme';
 import { useOrder } from '@/lib/hooks/useOrders';
@@ -34,7 +35,7 @@ export default function AdminOrderDetailScreen() {
   if (loading || !order) return <LoadingScreen />;
 
   async function handleStatusChange(newStatus: OrderStatus) {
-    const { error } = await updateOrderStatus(orderId, order!.table_id, newStatus);
+    const { error } = await updateOrderStatus(orderId, newStatus);
     if (error) Alert.alert('Error', error);
   }
 
@@ -72,12 +73,7 @@ export default function AdminOrderDetailScreen() {
             <Text style={styles.itemPrice}>{formatCurrency(item.item_price * item.quantity)}</Text>
           </View>
         )}
-        ListFooterComponent={
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalAmount}>{formatCurrency(order.total_amount)}</Text>
-          </View>
-        }
+        ListFooterComponent={<OrderTotals order={order} />}
       />
 
       <View style={styles.actions}>
@@ -116,13 +112,6 @@ const styles = StyleSheet.create({
   itemQty: { fontSize: 15, fontWeight: '600', color: BrandColor, width: 36 },
   itemName: { flex: 1, fontSize: 15 },
   itemPrice: { fontSize: 15, fontWeight: '600' },
-  totalRow: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    paddingVertical: Spacing.three, marginTop: Spacing.two,
-    borderTopWidth: 2, borderTopColor: Colors.light.backgroundElement,
-  },
-  totalLabel: { fontSize: 20, fontWeight: '700' },
-  totalAmount: { fontSize: 22, fontWeight: '700', color: BrandColor },
   actions: { padding: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.two },
   actionBtn: { padding: Spacing.three, borderRadius: 12, alignItems: 'center' },
   actionBtnText: { color: '#fff', fontSize: 17, fontWeight: '600' },

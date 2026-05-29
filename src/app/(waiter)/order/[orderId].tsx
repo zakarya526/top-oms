@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { OrderTotals } from '@/components/OrderTotals';
 import { StatusBadge } from '@/components/StatusBadge';
 import { Colors, Spacing, BrandColor, StatusColors, DangerColor, DangerBackground } from '@/constants/theme';
 import { useOrder } from '@/lib/hooks/useOrders';
@@ -25,7 +26,7 @@ export default function OrderDetailScreen() {
   if (loading || !order) return <LoadingScreen />;
 
   async function handleStatusChange(newStatus: 'served' | 'completed' | 'cancelled') {
-    const { error } = await updateOrderStatus(orderId, order!.table_id, newStatus);
+    const { error } = await updateOrderStatus(orderId, newStatus);
     if (error) Alert.alert('Error', error);
   }
 
@@ -65,14 +66,7 @@ export default function OrderDetailScreen() {
             </Text>
           </View>
         )}
-        ListFooterComponent={
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalAmount}>
-              {formatCurrency(order.total_amount)}
-            </Text>
-          </View>
-        }
+        ListFooterComponent={<OrderTotals order={order} />}
       />
 
       <View style={styles.actions}>
@@ -119,13 +113,6 @@ const styles = StyleSheet.create({
   itemQty: { fontSize: 15, fontWeight: '600', color: BrandColor, width: 36 },
   itemName: { flex: 1, fontSize: 15, color: Colors.light.text },
   itemPrice: { fontSize: 15, fontWeight: '600', color: Colors.light.text },
-  totalRow: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    paddingVertical: Spacing.three, marginTop: Spacing.two,
-    borderTopWidth: 2, borderTopColor: Colors.light.backgroundElement,
-  },
-  totalLabel: { fontSize: 20, fontWeight: '700' },
-  totalAmount: { fontSize: 22, fontWeight: '700', color: BrandColor },
   actions: { padding: Spacing.three, paddingBottom: Spacing.six, gap: Spacing.two },
   actionButton: {
     backgroundColor: BrandColor, padding: Spacing.three,

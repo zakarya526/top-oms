@@ -2,10 +2,12 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, Text } from 'react-native';
 
+import { RoleGate } from '@/components/RoleGate';
 import { BrandColor, Colors } from '@/constants/theme';
 
 export default function WaiterLayout() {
   return (
+    <RoleGate role="waiter">
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: BrandColor,
@@ -52,5 +54,6 @@ export default function WaiterLayout() {
       <Tabs.Screen name="order-summary" options={{ href: null, title: 'Order Summary' }} />
       <Tabs.Screen name="order/[orderId]" options={{ href: null, title: 'Order Detail' }} />
     </Tabs>
+    </RoleGate>
   );
 }

@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import React from 'react';
 import {
+  Alert,
   FlatList,
   Pressable,
   StyleSheet,
@@ -10,10 +11,8 @@ import {
 
 import { EmptyState } from '@/components/EmptyState';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { StatusBadge } from '@/components/StatusBadge';
 import {
   BrandColor,
-  BrandColorLight,
   CardShadow,
   Colors,
   Spacing,
@@ -23,7 +22,7 @@ import {
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useOrders, OrderWithItems } from '@/lib/hooks/useOrders';
 import { useResponsive } from '@/lib/hooks/useResponsive';
-import { supabase } from '@/lib/supabase';
+import { updateOrderStatus } from '@/lib/utils/updateOrderStatus';
 import { getTimeSince } from '@/lib/utils/getTimeSince';
 
 export default function KitchenQueueScreen() {
@@ -44,7 +43,8 @@ export default function KitchenQueueScreen() {
   const columns = getColumns({ compact: 1, medium: 2, wide: 3 });
 
   async function handleStatusChange(orderId: string, newStatus: 'preparing' | 'ready') {
-    await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+    const { error } = await updateOrderStatus(orderId, newStatus);
+    if (error) Alert.alert('Error', error);
   }
 
   if (loading) return <LoadingScreen />;

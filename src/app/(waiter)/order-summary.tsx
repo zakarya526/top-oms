@@ -46,37 +46,19 @@ export default function OrderSummaryScreen() {
 
     setSubmitting(true);
     try {
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          restaurant_id: profile.restaurant_id,
-          table_id: tableId,
-          waiter_id: profile.id,
-          status: 'pending',
-          notes: orderNotes || null,
-          total_amount: total,
-        })
-        .select()
-        .single();
+      // Server computes prices/total from the catalog and marks the table
+      // occupied; the client never sets prices (see the create_order RPC).
+      const { error } = await supabase.rpc('create_order', {
+        p_table_id: tableId,
+        p_notes: orderNotes,
+        p_items: items.map((item) => ({
+          menu_item_id: item.menuItem.id,
+          quantity: item.quantity,
+          notes: item.notes || null,
+        })),
+      });
 
-      if (orderError) throw orderError;
-
-      const orderItems = items.map((item) => ({
-        order_id: order.id,
-        menu_item_id: item.menuItem.id,
-        restaurant_id: profile.restaurant_id,
-        item_name: item.menuItem.name,
-        item_price: item.menuItem.price,
-        quantity: item.quantity,
-        notes: item.notes || null,
-      }));
-
-      const [itemsResult] = await Promise.all([
-        supabase.from('order_items').insert(orderItems),
-        supabase.from('tables').update({ status: 'occupied' }).eq('id', tableId),
-      ]);
-
-      if (itemsResult.error) throw itemsResult.error;
+      if (error) throw error;
 
       clearCart();
       Alert.alert('Order Placed', 'Your order has been sent to the kitchen.', [
