@@ -28,6 +28,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useOrderStore } from '@/lib/stores/orderStore';
 import { supabase } from '@/lib/supabase';
 import { formatCurrency } from '@/lib/utils/formatCurrency';
+import { playOrderSound } from '@/lib/utils/orderSounds';
 
 const SERVICE_RATE = 0.1;
 
@@ -60,6 +61,7 @@ export default function OrderSummaryScreen() {
 
       if (error) throw error;
 
+      playOrderSound('added'); // acting-device chime: order sent to kitchen
       clearCart();
       Alert.alert('Order Placed', 'Your order has been sent to the kitchen.', [
         { text: 'OK', onPress: () => router.replace('/(waiter)/my-orders') },

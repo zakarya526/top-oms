@@ -3,6 +3,7 @@ import {
   Alert,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
@@ -12,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from '@/components/KeyboardAwareScrollView';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { BrandColor, CardShadow, Colors, Spacing, PlaceholderColor } from '@/constants/theme';
+import { useSoundStore } from '@/lib/stores/soundStore';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/lib/types/database';
 
@@ -23,6 +25,8 @@ export default function AdminSettingsScreen() {
   const [name, setName] = useState('');
   const [currency, setCurrency] = useState('');
   const [saving, setSaving] = useState(false);
+  const muted = useSoundStore((s) => s.muted);
+  const setMuted = useSoundStore((s) => s.setMuted);
 
   useEffect(() => {
     fetchRestaurant();
@@ -88,6 +92,23 @@ export default function AdminSettingsScreen() {
         >
           <Text style={styles.saveBtnText}>{saving ? 'Saving...' : 'Save Changes'}</Text>
         </Pressable>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>SOUNDS</Text>
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleText}>
+              <Text style={styles.toggleTitle}>Order sound effects</Text>
+              <Text style={styles.toggleHint}>
+                Play a chime on each order status change on this device.
+              </Text>
+            </View>
+            <Switch
+              value={!muted}
+              onValueChange={(on) => setMuted(!on)}
+              trackColor={{ true: BrandColor, false: '#CBD5E1' }}
+            />
+          </View>
+        </View>
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );
@@ -122,6 +143,28 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     fontSize: 16,
     color: Colors.light.text,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    backgroundColor: Colors.light.card,
+    borderRadius: 14,
+    padding: Spacing.three,
+    ...CardShadow,
+  },
+  toggleText: {
+    flex: 1,
+    gap: 4,
+  },
+  toggleTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.light.text,
+  },
+  toggleHint: {
+    fontSize: 13,
+    color: Colors.light.textSecondary,
   },
   saveBtn: {
     backgroundColor: BrandColor,

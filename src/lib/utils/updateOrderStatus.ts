@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { Enums } from '@/lib/types/database';
+import { playOrderSound } from '@/lib/utils/orderSounds';
 
 type OrderStatus = Enums<'order_status'>;
 
@@ -16,6 +17,10 @@ export async function updateOrderStatus(
     p_order_id: orderId,
     p_status: newStatus,
   });
+
+  // Acting-device feedback: chime the new status on success (no-ops for
+  // statuses without a sound, when muted, or when audio is unavailable).
+  if (!error) playOrderSound(newStatus);
 
   return { error: error ? error.message : null };
 }
