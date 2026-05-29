@@ -4,6 +4,8 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -91,10 +93,17 @@ export default function OrderSummaryScreen() {
   return (
     <ResponsiveContainer>
     <SafeAreaView style={styles.container} edges={['bottom']}>
+      <KeyboardAvoidingView
+        style={styles.flex}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
       <FlatList
         data={items}
         keyExtractor={(item) => item.menuItem.id}
         contentContainerStyle={styles.list}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
+        automaticallyAdjustKeyboardInsets
         ListHeaderComponent={
           <Text style={styles.heading}>Selected Items</Text>
         }
@@ -164,12 +173,16 @@ export default function OrderSummaryScreen() {
           <Text style={styles.submitText}>SUBMIT ORDER  →</Text>
         )}
       </Pressable>
+      </KeyboardAvoidingView>
     </SafeAreaView>
     </ResponsiveContainer>
   );
 }
 
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: Colors.light.background,

@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -13,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { KeyboardAwareScrollView } from '@/components/KeyboardAwareScrollView';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { BrandColor, BrandColorLight, CardShadow, Colors, Spacing, PlaceholderColor } from '@/constants/theme';
 
@@ -41,10 +40,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
-      >
+      <KeyboardAwareScrollView contentContainerStyle={styles.keyboardView}>
         {/* Brand Header */}
         <View style={styles.header}>
           <View style={styles.logoContainer}>
@@ -99,8 +95,17 @@ export default function LoginScreen() {
               <Text style={styles.buttonText}>Establish Connection  →</Text>
             )}
           </Pressable>
+
+          <Pressable
+            style={styles.signupLink}
+            onPress={() => router.push('/(auth)/signup')}
+          >
+            <Text style={styles.signupLinkText}>
+              New here? <Text style={styles.signupLinkBold}>Create your restaurant</Text>
+            </Text>
+          </Pressable>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
@@ -111,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.light.background,
   },
   keyboardView: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: Spacing.four,
   },
@@ -206,6 +211,19 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 17,
+    fontWeight: '700',
+  },
+  signupLink: {
+    alignItems: 'center',
+    paddingVertical: Spacing.three,
+    marginTop: Spacing.two,
+  },
+  signupLinkText: {
+    fontSize: 14,
+    color: Colors.light.textSecondary,
+  },
+  signupLinkBold: {
+    color: BrandColor,
     fontWeight: '700',
   },
 });

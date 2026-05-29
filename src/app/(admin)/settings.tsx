@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { KeyboardAwareScrollView } from '@/components/KeyboardAwareScrollView';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { BrandColor, CardShadow, Colors, Spacing, PlaceholderColor } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
@@ -54,7 +55,7 @@ export default function AdminSettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <View style={styles.form}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.form}>
         <Text style={styles.heading}>Restaurant Settings</Text>
 
         <View style={styles.field}>
@@ -87,7 +88,7 @@ export default function AdminSettingsScreen() {
         >
           <Text style={styles.saveBtnText}>{saving ? 'Saving...' : 'Save Changes'}</Text>
         </Pressable>
-      </View>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
